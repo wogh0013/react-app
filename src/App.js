@@ -71,6 +71,10 @@ class App extends Component {
           data={this.state.contents}>
         </TOC>
 
+          <ul>
+            <li><a href="create">c</a></li>
+          </ul>
+
         <Content
           title={_title}
           desc={_desc}>
@@ -81,3 +85,6 @@ class App extends Component {
 };
 
 export default App;
+
+//상위가 하위를 변경할 때 : props
+//하위가 상위를 변경할 때 : state(event)
