@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import TOC from "./components/TOC";
 import ReadContent from "./components/ReadContent";
 import CreateContent from "./components/CreateContent";
+import UpdateContent from "./components/UpdateContent";
 import Subject from "./components/Subject";
 import Control from "./components/Control";
 import './App.css';
@@ -33,7 +34,20 @@ class App extends Component {
   //화면이 다시 그려진다.
   //render함수 : 어떤 HTML을 그릴 것인가라는 것을 결정하는 함수이다.
   // -->> props나 state가 바뀌면, 화면이 다시 그려진다.
-  render(){
+
+  getReadContent(){
+    var i = 0;
+    while(i < this.state.contents.length){
+      var data = this.state.contents[i];
+      if(data.id === this.state.selected_content_id){
+        return data;
+        break;
+      }
+      i = i + 1;
+    }
+  }
+
+  getContent(){
     console.log('App render');
     var _title, _desc, _article = null;
     if(this.state.mode === 'welcome'){
@@ -41,30 +55,59 @@ class App extends Component {
       _desc = this.state.welcome.desc;
       _article = <ReadContent title={_title} desc={_desc}></ReadContent>
     } else if(this.state.mode === 'read'){
-        var i = 0;
-        while(i < this.state.contents.length){
-          var data = this.state.contents[i];
-          if(data.id === this.state.selected_content_id){
-            _title = data.title;
-            _desc = data.desc;
-            break;
-          }
-          i = i + 1;
-        }
-        _article = <ReadContent title={_title} desc={_desc}></ReadContent>
+        var _content = this.getReadContent();
+        _article = <ReadContent title={_content.title} desc={_content.desc}></ReadContent>
      } else if(this.state.mode === 'create'){
        _article = <CreateContent onSubmit={function(_title, _desc){
         // add content to this.state.contents
         this.max_content_id = this.max_content_id + 1;
-        this.state.contents.push(
+        // this.state.contents.push(
+        //   {id:this.max_content_id, title:_title, desc:_desc}
+        // );
+        // this.setState({
+        //   contents:this.state.contents
+        // });
+        // -> push 방식은 기존 데이터 배열에 값을 하나 추가하는 방식이라 성능개선 때 힘듦
+        var _contents = this.state.contents.concat(
           {id:this.max_content_id, title:_title, desc:_desc}
-        );
+        )
         this.setState({
-          contents:this.state.contents
-        });
+          contents:_contents,
+          mode:'read',
+          selected_content_id:this.max_content_id
+        })
+        // -> concat은 원본 데이터는 남겨두면서, 새로운 데이터를 추가하는 방식이라 성능개선 때 편함
+        //                                      새로운 데이터를 state에 갱신
+        //    즉, concat은 복제본을 수정하는 방식임
         console.log(_title, _desc);
        }.bind(this)}></CreateContent>
+     } else if(this.state.mode === 'update'){
+       _content = this.getReadContent();
+      _article = <UpdateContent data ={_content} onSubmit={
+        function(_id, _title, _desc){
+        var _contents = Array.from(this.state.contents); 
+        //불변의 기법(원본을 해치지 않음). this.state.contents를 복제한 새로운 배열이 만들어짐
+        var i = 0;
+        while(i < _contents.length){
+          if(_contents[i].id === _id){
+            _contents[i] = {id:_id, title:_title, desc:_desc};
+            break;
+          }
+          i = i + 1;
+        }
+        this.setState({
+           contents:_contents,
+           mode:'read'
+        });
+        console.log(_title, _desc);
+        }.bind(this)}></UpdateContent>
      }
+    return _article;
+  } 
+
+  render(){
+    
+    
 
     return (
       <div className="App">
@@ -93,10 +136,10 @@ class App extends Component {
           })
         }.bind(this)}></Control>
 
-        {_article}
+        {this.getContent}
 
       </div>
-    )
+   )
   }
 };
 
