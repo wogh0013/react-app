@@ -6,7 +6,6 @@ import UpdateContent from "./components/UpdateContent";
 import Subject from "./components/Subject";
 import Control from "./components/Control";
 import './App.css';
-import { scryRenderedDOMComponentsWithClass } from 'react-dom/test-utils';
 
 //해당 App.js를 사용하고 있는 파일은 index.js 파일이다.
 
@@ -106,9 +105,6 @@ class App extends Component {
   } 
 
   render(){
-    
-    
-
     return (
       <div className="App">
         <Subject
@@ -131,9 +127,28 @@ class App extends Component {
         </TOC>
 
         <Control onChangeMode={function(_mode){
+          if(_mode === 'delete'){
+            if(window.confirm('really?')){
+              var _contents = Array.from(this.state.contents);
+              var i = 0;
+              while(i < this.state.contents.length){
+                if(_contents[i].id === this.state.selected_content_id){
+                  _contents.splice(i, 1); //i번부터 1개를 지우겠다
+                  break;
+                }
+                i = i + 1;
+              }
+              this.setState({
+                mode:'welcome',
+                contents:_contents
+              });
+              alert('deleted');
+            }
+          } else{
           this.setState({
             mode:_mode
-          })
+          });
+        }
         }.bind(this)}></Control>
 
         {this.getContent}
